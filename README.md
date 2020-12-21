@@ -1,2 +1,3 @@
 # DC-GANs
-Deep Convolutional GANs implementation
+Deep Convolutional GANs implementation repo in PyTorch.
+
