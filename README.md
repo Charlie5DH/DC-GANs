@@ -28,6 +28,7 @@ conda activate DCGANS or conda activate ./env
 pip install -r requirements.txt
 ```
 If `pip install -r requirements` fails when installing torchvision install it mannually.
+`pip install torchvision===0.8.2 -f https://download.pytorch.org/whl/torch_stable.html`
 
 If you add, remove, or need to update versions of some requirements, edit the `.in` files, then run
 

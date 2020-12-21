@@ -6,6 +6,7 @@ from torchvision.datasets import MNIST
 from torchvision.datasets import CelebA
 from torchvision.utils import make_grid
 from torch.utils.data import DataLoader
+import torchvision.datasets as datasets
 import matplotlib.pyplot as plt
 torch.manual_seed(42)
 
@@ -32,10 +33,10 @@ def download_mnist(parameters):
         transforms.Normalize((0.5,), (0.5,))
     ])
 
-    dataloader = DataLoader(
-        MNIST('.', download=False, transform=transform),
-        batch_size=parameters['batch_size'],
-        shuffle=True)
+    dataset = datasets.MNIST(root=parameters['data_dir'], train=True, transform=transform,
+                       download=parameters['download'])
+
+    dataloader = DataLoader( dataset, batch_size=parameters['batch_size'], shuffle=True)
 
     return dataloader
 
@@ -52,7 +53,7 @@ def download_celeba(parameters):
     ])
 
     dataloader = DataLoader(
-        CelebA(".", split='train', download=True, transform=transform),
+        CelebA(parameters['data_dir'], split='train', download=parameters['download'], transform=transform),
         batch_size=parameters['batch_size'],
         shuffle=True)
     

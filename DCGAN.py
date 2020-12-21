@@ -6,6 +6,13 @@ from torchvision.utils import make_grid
 import matplotlib.pyplot as plt
 torch.manual_seed(42)
 
+def weights_init(m):
+    if isinstance(m, nn.Conv2d) or isinstance(m, nn.ConvTranspose2d):
+        nn.init.normal_(m.weight, 0.0, 0.02)
+    if isinstance(m, nn.BatchNorm2d):
+        nn.init.normal_(m.weight, 0.0, 0.02)
+        nn.init.constant_(m.bias, 0)
+
 class Generator(nn.Module):
     '''
     Generator Class
@@ -16,7 +23,7 @@ class Generator(nn.Module):
     '''
     def __init__(self, parameters):
         super(Generator, self).__init__()
-        self.z_dim = parameters['zdim']
+        self.z_dim = parameters['z_dim']
         self.hidden_dim = parameters['hidden_dim']
         self.kernel_size = parameters['kernel_size']
         self.stride = parameters['stride']
@@ -24,19 +31,19 @@ class Generator(nn.Module):
         
         # Build the neural network
         self.gen = nn.Sequential(
-            nn.ConvTranspose2d(z_dim, hidden_dim*4, kernel_size=kernel_size, stride=stride),
-            nn.BatchNorm2d(hidden_dim*4),
-            nn.ReLU()
-            nn.ConvTranspose2d(hidden_dim*4, hidden_dim*8, kernel_size, stride),
-            nn.BatchNorm2d(hidden_dim*8),
-            nn.ReLU()
-            nn.ConvTranspose2d(hidden_dim*8, hidden_dim*4, kernel_size, stride),
-            nn.BatchNorm2d(hidden_dim*4),
-            nn.ReLU()
-            nn.ConvTranspose2d(hidden_dim*4, hidden_dim*2, kernel_size, stride),
-            nn.BatchNorm2d(hidden_dim*2),
-            nn.ReLU()
-            nn.ConvTranspose2d(hidden_dim*2, img_chan, kernel_size, stride),
+            nn.ConvTranspose2d(self.z_dim, self.hidden_dim*4, kernel_size=self.kernel_size, stride=self.stride),
+            nn.BatchNorm2d(self.hidden_dim*4),
+            nn.ReLU(),
+            nn.ConvTranspose2d(self.hidden_dim*4, self.hidden_dim*8, self.kernel_size, self.stride),
+            nn.BatchNorm2d(self.hidden_dim*8),
+            nn.ReLU(),
+            nn.ConvTranspose2d(self.hidden_dim*8, self.hidden_dim*4, self.kernel_size, self.stride),
+            nn.BatchNorm2d(self.hidden_dim*4),
+            nn.ReLU(),
+            nn.ConvTranspose2d(self.hidden_dim*4, self.hidden_dim*2, self.kernel_size, self.stride),
+            nn.BatchNorm2d(self.hidden_dim*2),
+            nn.ReLU(),
+            nn.ConvTranspose2d(self.hidden_dim*2, self.img_chan, self.kernel_size, self.stride),
             nn.Tanh()
         )
 
@@ -59,17 +66,6 @@ class Generator(nn.Module):
         x = self.unsqueeze_noise(noise)
         return self.gen(x)
 
-    def get_noise(self, n_samples, z_dim, device='cpu'):
-        '''
-        Function for creating noise vectors: Given the dimensions (n_samples, z_dim)
-        creates a tensor of that shape filled with random numbers from the normal distribution.
-        Parameters:
-            n_samples: the number of samples to generate, a scalar
-            z_dim: the dimension of the noise vector, a scalar
-            device: the device type
-        '''
-        return torch.randn(n_samples, z_dim, device=device)
-
 class Discriminator(nn.Module):
     '''
     Discriminator Class
@@ -77,23 +73,23 @@ class Discriminator(nn.Module):
     im_chan: the number of channels in the images, fitted for the dataset used, a scalar
     hidden_dim: the inner dimension, a scalar
     '''
-    def __init__(self, parameters, output_channels):
+    def __init__(self, parameters):
         super(Discriminator, self).__init__()
 
-        self.hidden_dim = parameters['hidden_dim']
+        self.hidden_dim = parameters['d_hidden_dim']
         self.kernel_size = parameters['kernel_size']
         self.stride = parameters['stride']
         self.img_chan = parameters['img_chan']
-        self.output_channels = output_channels
+        self.output_channels = parameters['output_chn']
 
         self.disc = nn.Sequential(
-            nn.Conv2d(img_chan, hidden_dim, kernel_size, stride),
-            nn.BatchNorm2d(hidden_dim),
+            nn.Conv2d(self.img_chan, self.hidden_dim, self.kernel_size, self.stride),
+            nn.BatchNorm2d(self.hidden_dim),
             nn.LeakyReLU(negative_slope=0.2), 
-            nn.Conv2d(img_chan, hidden_dim*2, kernel_size, stride),
-            nn.BatchNorm2d(hidden_dim*2),
+            nn.Conv2d(self.hidden_dim, self.hidden_dim*2, self.kernel_size, self.stride),
+            nn.BatchNorm2d(self.hidden_dim*2),
             nn.LeakyReLU(negative_slope=0.2),
-            nn.Conv2d(hidden_dim*2, output_channels, kernel_size, stride)
+            nn.Conv2d(self.hidden_dim*2, self.output_channels, self.kernel_size, self.stride)
         )
 
     def forward(self, image):
