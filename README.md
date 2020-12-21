@@ -27,6 +27,7 @@ So, after running `conda env create`, activate the new environment and install t
 conda activate DCGANS or conda activate ./env
 pip install -r requirements.txt
 ```
+If `pip install -r requirements` fails when installing torchvision install it mannually.
 
 If you add, remove, or need to update versions of some requirements, edit the `.in` files, then run
 
