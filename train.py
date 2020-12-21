@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from tqdm.auto import tqdm
 
-from utils import show_tensor_images, download_mnist, download_celeba
+from utils import show_tensor_images, download_mnist, download_celeba, plot_losses
 from DCGAN import Generator, Discriminator, weights_init
 
 seed = 42
@@ -92,6 +92,8 @@ def train(params):
     mean_discriminator_loss = 0
     dataloader = get_train_data(params)
     display_step = 500
+    g_loss = []
+    d_loss = []
 
     gen, gen_opt = create_generator(params)
     disc, disc_opt = create_discriminator(params)
@@ -135,6 +137,9 @@ def train(params):
             # Keep track of the average generator loss
             mean_generator_loss += gen_loss.item() / display_step
 
+            g_loss.append(gen_loss.item())
+            d_loss.append(disc_loss.item())
+
             ## Visualization code ##
             if cur_step % display_step == 0 and cur_step > 0:
                 print(f"Step {cur_step}: Generator loss: {mean_generator_loss}, discriminator loss: {mean_discriminator_loss}")
@@ -143,6 +148,15 @@ def train(params):
                 mean_generator_loss = 0
                 mean_discriminator_loss = 0
             cur_step += 1
+
+    # Save the trained model.
+    torch.save({
+        'generator' : gen.state_dict(),
+        'discriminator' : disc.state_dict(),
+        'optimizerG' : gen_opt.state_dict(),
+        'optimizerD' : disc_opt.state_dict(),
+        'params' : params
+        }, 'model/model_final.pth')
 
 
 def main():
@@ -156,7 +170,7 @@ def main():
 
     parser = argparse.ArgumentParser(description='Train DCGAN on MNIST or CelebA datasets')
     parser.add_argument('-batch_size', type=int, help='Batch size during training.', default=128)
-    parser.add_argument('-image_size', type=int, help='Spatial size of training images.')
+    parser.add_argument('-image_size', type=int, help='Spatial size of training images.', default=64)
     parser.add_argument('-z_dim', type=int, help='The dimension of the noise vector, a scalar')
     parser.add_argument('-hidden_dim', type=int, help='Size of feature maps in the generator.')
     parser.add_argument('-d_hidden_dim', type=int, help='Size of features maps in the discriminator.')

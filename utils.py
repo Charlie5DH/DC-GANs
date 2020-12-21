@@ -58,3 +58,15 @@ def download_celeba(parameters):
         shuffle=True)
     
     return dataloader
+
+
+def plot_losses(g_loss, d_loss):
+    # Plot the training losses.
+    plt.figure(figsize=(10,5))
+    plt.title("Generator and Discriminator Loss During Training")
+    plt.plot(g_loss,label="Generator")
+    plt.plot(d_loss,label="Discriminator")
+    plt.xlabel("iterations")
+    plt.ylabel("Loss")
+    plt.legend()
+    plt.show()
