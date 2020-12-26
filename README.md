@@ -8,6 +8,7 @@ Deep Convolutional GANs implementation repo in PyTorch.
 - PyTorch 1.7
 - matplotlib
 - Python3
+- numpy
 
 ## Set up the Python environment
 
