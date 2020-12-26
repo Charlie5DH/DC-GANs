@@ -1,3 +1,5 @@
+import numpy as np
+import torchvision.utils as vutils
 import torch
 from torch import nn
 from tqdm.auto import tqdm
@@ -59,7 +61,6 @@ def download_celeba(parameters):
     
     return dataloader
 
-
 def plot_losses(g_loss, d_loss):
     # Plot the training losses.
     plt.figure(figsize=(10,5))
@@ -70,3 +71,12 @@ def plot_losses(g_loss, d_loss):
     plt.ylabel("Loss")
     plt.legend()
     plt.show()
+
+def plot_train_images(dataloader, params):
+    # Plot the training images.
+    sample_batch = next(iter(dataloader))
+    plt.figure(figsize=(8, 8))
+    plt.axis("off")
+    plt.title("Training Images")
+    plt.imshow(np.transpose(vutils.make_grid(
+    sample_batch[0].to(params['device'])[ : 64], padding=2, normalize=True).cpu(), (1, 2, 0)))

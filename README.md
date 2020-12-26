@@ -36,6 +36,34 @@ If you add, remove, or need to update versions of some requirements, edit the `.
 pip-compile requirements.in && pip-compile requirements-dev.in
 ```
 
+## Use
+
+For training run the training script `train.py` and pass the argumenrs.
+
+### Default arguments
+
+```python
+parameters = {
+    "batch_size"   : 128,      # Batch size during training.
+    'image_size'   : 64,       # Spatial size of training images.
+    'img_chan'     : 1,        # Number of channles of images. 3 for RGB.
+    'z_dim'        : 64,       # the dimension of the noise vector, a scalar
+    'hidden_dim'   : 64,       # Size of feature maps in the generator.
+    'kernel_size'  : 4,
+    'stride'       : 2,
+    'd_hidden_dim' : 64,       # Size of features maps in the discriminator.
+    'n_epochs'     : 10,       # Number of training epochs.
+    'lr'           : 0.0002,   # Learning rate for optimizers
+    'beta_1'       : 0.5,      # Beta1 hyperparam for Adam optimizer
+    'beta_2'       : 0.999,    # Beta2 hyperparam for Adam optimizer
+    'save_epoch'   : 2,
+    'output_chn'   : 1,        # Number of channels of the output image 
+    'device'       : 'cpu',
+    'download'     : 'True',
+    'data_dir'     : 'dataset/'
+    }
+```
+
 ## References
 
 - MNIST Database: http://yann.lecun.com/exdb/mnist/

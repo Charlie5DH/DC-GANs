@@ -1,12 +1,12 @@
+import sys
+import os
+import numpy as np
+import argparse
+import random
 import torch
 import torch.nn as nn
 import torch.optim as optim
 import torchvision.utils as vutils
-import numpy as np
-import random
-import sys
-import os
-import argparse
 from torch import nn
 from tqdm.auto import tqdm
 from torchvision import transforms
@@ -61,17 +61,12 @@ def get_train_data(params):
         dataloader = download_mnist(params)
     else:
         dataloader = download_celeba(params)
-    # Plot the training images.
-    sample_batch = next(iter(dataloader))
-    plt.figure(figsize=(8, 8))
-    plt.axis("off")
-    plt.title("Training Images")
-    plt.imshow(np.transpose(vutils.make_grid(
-    sample_batch[0].to(params['device'])[ : 64], padding=2, normalize=True).cpu(), (1, 2, 0)))
     return dataloader
 
 def create_generator(params):
-    
+    '''
+    Define generator and optmizer.
+    '''
     gen = Generator(params).to(params['device'])
     gen_opt = torch.optim.Adam(gen.parameters(), lr=params['lr'], betas=(params['beta_1'],params['beta_2']))
     gen = gen.apply(weights_init)
@@ -85,6 +80,9 @@ def create_discriminator(params):
     return disc, disc_opt
 
 def train(params):
+    '''
+    Train the GAN network.
+    '''
     criterion = nn.BCEWithLogitsLoss()
 
     cur_step = 0
@@ -147,17 +145,19 @@ def train(params):
                 show_tensor_images(real)
                 mean_generator_loss = 0
                 mean_discriminator_loss = 0
+            
             cur_step += 1
+    
+    plot_losses(g_loss, d_loss)
 
     # Save the trained model.
     torch.save({
-        'generator' : gen.state_dict(),
-        'discriminator' : disc.state_dict(),
-        'optimizerG' : gen_opt.state_dict(),
-        'optimizerD' : disc_opt.state_dict(),
-        'params' : params
-        }, 'model/model_final.pth')
-
+    'generator' : gen.state_dict(),
+    'discriminator' : disc.state_dict(),
+    'optimizerG' : gen_opt.state_dict(),
+    'optimizerD' : disc_opt.state_dict(),
+    'params' : params
+    }, 'model/model_final.pth')
 
 def main():
 
@@ -169,17 +169,26 @@ def main():
     params['device'] = device
 
     parser = argparse.ArgumentParser(description='Train DCGAN on MNIST or CelebA datasets')
-    parser.add_argument('-batch_size', type=int, help='Batch size during training.', default=128)
+    parser.add_argument('-batch_size', metavar='bz', type=int, help='Batch size during training.', default=128)
     parser.add_argument('-image_size', type=int, help='Spatial size of training images.', default=64)
-    parser.add_argument('-z_dim', type=int, help='The dimension of the noise vector, a scalar')
-    parser.add_argument('-hidden_dim', type=int, help='Size of feature maps in the generator.')
-    parser.add_argument('-d_hidden_dim', type=int, help='Size of features maps in the discriminator.')
-    parser.add_argument('-n_epochs', type=int, help='Number of training epochs.')
+    parser.add_argument('-z_dim', type=int, help='The dimension of the noise vector, a scalar', default=64)
+    parser.add_argument('-hidden_dim', type=int, help='Size of feature maps in the generator.', default=64)
+    parser.add_argument('-d_hidden_dim', type=int, help='Size of features maps in the discriminator.', default=64)
+    parser.add_argument('-n_epochs', type=int, help='Number of training epochs.', default=10)
     parser.add_argument('-data_dir', help='Directory', default='dataset/')
     group = parser.add_mutually_exclusive_group()
     group.add_argument('-mni', '--train_mnist', help='Train MNSIT dataset', action='store_false')
     group.add_argument('-cel', '--train_celeb', help='Train CelebA dataset', action='store_false')
+    
     args = parser.parse_args()
+
+    params['batch_size'] = args.batch_size
+    params['image_size'] = args.image_size
+    params['z_dim'] = args.z_dim
+    params['hidden_dim'] = args.hidden_dim
+    params['d_hidden_dim'] = args.d_hidden_dim
+    params['n_epochs'] = args.n_epochs
+    params['data_dir'] = args.data_dir
 
     if args.train_mnist:
         params['img_chan'] = 1
